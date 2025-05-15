@@ -1,0 +1,496 @@
+<!-- 名片生成器（修复 generateCard 和 updateCustomColor 未定义错误 + 样式布局优化） -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>名片生成器</title>
+  <style>
+    :root {
+      --primary-color: #3498db;
+      --secondary-color: #2c3e50;
+      --accent-color: #e74c3c;
+      --light-gray: #f5f5f5;
+      --dark-gray: #333;
+      --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background: var(--light-gray);
+      color: var(--dark-gray);
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 960px;
+      margin: auto;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    h1 {
+      color: var(--secondary-color);
+      margin-bottom: 10px;
+    }
+    .form-container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      margin-bottom: 30px;
+      text-align: left;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    .form-group .color-label-title {
+      font-weight: bold;
+      margin-bottom: 12px;
+      color: var(--secondary-color);
+      border-left: 4px solid var(--primary-color);
+      padding-left: 10px;
+    }
+    .theme-style-section {
+      margin-bottom: 25px;
+      background-color: #f9f9f9;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border-left: 4px solid var(--primary-color);
+    }
+    .color-label-title {
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: var(--secondary-color);
+      font-size: 16px;
+    }
+    .theme-color-setting {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+    .theme-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 8px;
+      border-radius: 8px;
+      width: 60px;
+    }
+    .theme-option:hover {
+      background-color: rgba(0,0,0,0.03);
+      transform: translateY(-2px);
+    }
+    .theme-option.active {
+      background-color: rgba(0,0,0,0.05);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .theme-color {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 3px solid white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: all 0.2s ease;
+    }
+    .theme-option:hover .theme-color {
+      transform: scale(1.1);
+    }
+    .theme-option.active .theme-color {
+      box-shadow: 0 0 0 2px var(--primary-color);
+    }
+    .theme-name {
+      font-size: 13px;
+      color: var(--secondary-color);
+      white-space: nowrap;
+      font-weight: 500;
+    }
+    .theme-blue .theme-color { background: #3498db; }
+    .theme-green .theme-color { background: #2ecc71; }
+    .theme-purple .theme-color { background: #9b59b6; }
+    .theme-red .theme-color { background: #e74c3c; }
+    .theme-dark .theme-color { background: #34495e; }
+    
+    .color-picker {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border-radius: 8px;
+      width: 60px;
+      transition: all 0.2s ease;
+    }
+    
+    .color-picker:hover {
+      background-color: rgba(0,0,0,0.03);
+      transform: translateY(-2px);
+    }
+    
+    .theme-picker {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: all 0.2s ease;
+    }
+    
+    .theme-picker:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .theme-picker input[type="color"] {
+      position: absolute;
+      width: 150%;
+      height: 150%;
+      top: -25%;
+      left: -25%;
+      padding: 0;
+      border: none;
+      cursor: pointer;
+    }
+    
+    .color-label {
+      font-size: 13px;
+      color: var(--secondary-color);
+      white-space: nowrap;
+      font-weight: 500;
+    }
+    
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+      font-weight: 500;
+    }
+    button:hover {
+      background-color: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    #canvasWrapper {
+      position: relative;
+      display: inline-block;
+      margin-top: 20px;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s ease;
+    }
+    #canvasWrapper:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+    #downloadIcon {
+      position: absolute;
+      top: -15px;
+      right: -15px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+      line-height: 40px;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: scale(0.8);
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
+    #canvasWrapper:hover #downloadIcon {
+      opacity: 1;
+      transform: scale(1);
+    }
+    canvas {
+      border-radius: 10px;
+      border: 1px solid #eee;
+      background: white;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>名片生成器</h1>
+    <div class="form-container">
+      <div class="form-group"><label for="name">姓名</label><input type="text" id="name" value="张三"></div>
+      <div class="form-group"><label for="title">职位</label><input type="text" id="title" value="产品经理"></div>
+      <div class="form-group"><label for="company">公司</label><input type="text" id="company" value="科技有限公司"></div>
+      <div class="form-group"><label for="phone">电话</label><input type="text" id="phone" value="138-0000-0000"></div>
+      <div class="form-group"><label for="phoneIcon">电话图标</label><input type="text" id="phoneIcon" value="📞"></div>
+      <div class="form-group"><label for="email">邮箱</label><input type="email" id="email" value="example@company.com"></div>
+      <div class="form-group"><label for="emailIcon">邮箱图标</label><input type="text" id="emailIcon" value="📩"></div>
+      <div class="form-group"><label for="avatar">上传头像</label><input type="file" id="avatar" accept="image/*"></div>
+
+      <div class="form-group theme-style-section">
+        <div class="color-label-title">主题样式选择</div>
+        <div class="theme-color-setting">
+          <div class="theme-option theme-blue active" onclick="setTheme('blue')" title="蓝色主题">
+            <div class="theme-color"></div>
+            <div class="theme-name">蓝色</div>
+          </div>
+          <div class="theme-option theme-green" onclick="setTheme('green')" title="绿色主题">
+            <div class="theme-color"></div>
+            <div class="theme-name">绿色</div>
+          </div>
+          <div class="theme-option theme-purple" onclick="setTheme('purple')" title="紫色主题">
+            <div class="theme-color"></div>
+            <div class="theme-name">紫色</div>
+          </div>
+          <div class="theme-option theme-red" onclick="setTheme('red')" title="红色主题">
+            <div class="theme-color"></div>
+            <div class="theme-name">红色</div>
+          </div>
+          <div class="theme-option theme-dark" onclick="setTheme('dark')" title="深色主题">
+            <div class="theme-color"></div>
+            <div class="theme-name">黑色</div>
+          </div>
+          
+          <div class="color-picker">
+            <div class="theme-picker" title="主色调">
+              <input type="color" id="primaryColor" value="#3498db" onchange="updateCustomColor()">
+            </div>
+            <div class="color-label">主色调</div>
+          </div>
+          
+          <div class="color-picker">
+            <div class="theme-picker" title="次色调">
+              <input type="color" id="secondaryColor" value="#2c3e50" onchange="updateCustomColor()">
+            </div>
+            <div class="color-label">次色调</div>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="generateCard()">生成名片</button>
+    </div>
+    <div id="canvasWrapper">
+      <button id="downloadIcon" onclick="downloadCard()" title="下载名片">⬇</button>
+      <canvas id="cardCanvas" width="400" height="200"></canvas>
+    </div>
+
+<script>
+// 初始化变量
+const canvas = document.getElementById("cardCanvas");
+const ctx = canvas.getContext("2d");
+let currentTheme = "blue";
+
+// 获取主题颜色
+function getThemeColors() {
+  const style = getComputedStyle(document.documentElement);
+  return {
+    primary: style.getPropertyValue("--primary-color").trim(),
+    secondary: style.getPropertyValue("--secondary-color").trim()
+  };
+}
+
+// 设置主题
+function setTheme(theme) {
+  // 移除所有主题选项的active类
+  document.querySelectorAll(".theme-option").forEach(option => {
+    option.classList.remove("active");
+  });
+  
+  // 添加active类到选中的主题
+  document.querySelector(`.theme-${theme}`).classList.add("active");
+  
+  // 设置主题颜色
+  let primaryColor, secondaryColor;
+  
+  switch(theme) {
+    case "blue":
+      primaryColor = "#3498db";
+      secondaryColor = "#2c3e50";
+      break;
+    case "green":
+      primaryColor = "#2ecc71";
+      secondaryColor = "#27ae60";
+      break;
+    case "purple":
+      primaryColor = "#9b59b6";
+      secondaryColor = "#8e44ad";
+      break;
+    case "red":
+      primaryColor = "#e74c3c";
+      secondaryColor = "#c0392b";
+      break;
+    case "dark":
+      primaryColor = "#34495e";
+      secondaryColor = "#2c3e50";
+      break;
+  }
+  
+  // 更新CSS变量
+  document.documentElement.style.setProperty("--primary-color", primaryColor);
+  document.documentElement.style.setProperty("--secondary-color", secondaryColor);
+  
+  // 更新颜色选择器的值
+  document.getElementById("primaryColor").value = primaryColor;
+  document.getElementById("secondaryColor").value = secondaryColor;
+  
+  currentTheme = theme;
+  
+  // 如果已有名片内容，则重新生成
+  if (document.getElementById("name").value) {
+    generateCard();
+  }
+}
+
+// 更新自定义颜色
+function updateCustomColor() {
+  const primaryColor = document.getElementById("primaryColor").value;
+  const secondaryColor = document.getElementById("secondaryColor").value;
+  
+  document.documentElement.style.setProperty("--primary-color", primaryColor);
+  document.documentElement.style.setProperty("--secondary-color", secondaryColor);
+  
+  // 移除所有主题选项的active类
+  document.querySelectorAll(".theme-option").forEach(option => {
+    option.classList.remove("active");
+  });
+  
+  // 如果已有名片内容，则重新生成
+  if (document.getElementById("name").value) {
+    generateCard();
+  }
+}
+
+// 默认头像
+const defaultAvatar = new Image();
+defaultAvatar.src = "data:image/svg+xml;base64," + btoa(`
+  <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">
+    <rect width="100%" height="100%" fill="#e0e0e0"/>
+    <circle cx="40" cy="30" r="20" fill="#f5f5f5"/>
+    <rect x="20" y="55" width="40" height="15" fill="#f5f5f5"/>
+  </svg>
+`);
+
+// 生成名片
+function generateCard() {
+  const name = document.getElementById("name").value;
+  const title = document.getElementById("title").value;
+  const company = document.getElementById("company").value;
+  const phone = document.getElementById("phone").value;
+  const email = document.getElementById("email").value;
+  const phoneIcon = document.getElementById("phoneIcon").value;
+  const emailIcon = document.getElementById("emailIcon").value;
+  const avatarInput = document.getElementById("avatar");
+  const colors = getThemeColors();
+
+  // 清空背景
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // 添加装饰元素
+  ctx.fillStyle = colors.primary;
+  ctx.fillRect(0, 0, 10, canvas.height);
+
+  // 添加底部装饰
+  ctx.fillStyle = colors.secondary;
+  ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+
+  // 头像逻辑
+  if (avatarInput.files.length > 0) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const userImg = new Image();
+      userImg.onload = () => {
+        drawAvatar(userImg);
+        drawText();
+      };
+      userImg.src = e.target.result;
+    };
+    reader.readAsDataURL(avatarInput.files[0]);
+  } else {
+    drawAvatar(defaultAvatar);
+    drawText();
+  }
+
+  function drawText() {
+    // 姓名
+    ctx.fillStyle = colors.secondary;
+    ctx.font = "bold 22px 'Helvetica Neue', Arial";
+    ctx.fillText(name || "姓名", 120, 50);
+
+    // 职位
+    ctx.fillStyle = colors.primary;
+    ctx.font = "16px 'Helvetica Neue', Arial";
+    ctx.fillText(title || "职位", 120, 75);
+
+    // 公司
+    ctx.fillStyle = colors.secondary;
+    ctx.font = "bold 14px 'Helvetica Neue', Arial";
+    ctx.fillText(company || "公司名称", 120, 105);
+
+    // 联系信息
+    ctx.fillStyle = "#555";
+    ctx.font = "14px 'Helvetica Neue', Arial";
+
+    // 电话图标和电话
+    ctx.fillText(phoneIcon + " " + (phone || "电话号码"), 120, 135);
+
+    // 邮箱图标和邮箱
+    ctx.fillText(emailIcon + " " + (email || "电子邮箱"), 120, 160);
+  }
+}
+
+// 绘制头像
+function drawAvatar(img) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(60, 60, 40, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.clip();
+  ctx.drawImage(img, 20, 20, 80, 80);
+  ctx.restore();
+}
+
+// 下载名片
+function downloadCard() {
+  const link = document.createElement("a");
+  link.download = "business_card.png";
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+}
+
+// 页面加载时初始化
+window.onload = function() {
+  // 设置默认主题
+  setTheme("blue");
+  // 生成初始名片
+  generateCard();
+};
+</script>
+</body>
+</html>
