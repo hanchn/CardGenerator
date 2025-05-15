@@ -1,4 +1,4 @@
-<!-- 名片生成器（修复 generateCard 和 updateCustomColor 未定义错误 + 样式布局优化） -->
+<!-- 名片生成器 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -481,9 +481,9 @@ function generateCard() {
     ctx.font = "14px 'Helvetica Neue', Arial";
 
     // 电话图标和电话
-    ctx.fillText(phoneIcon + " " + (phone || "电话号码"), 130, 145);
+    ctx.fillText(phoneIcon + " " + (phone || "电话号码"), 130, 140);
 
-    // 邮箱图标和邮箱 - 上移一些，预留底部间隙
+    // 邮箱图标和邮箱 - 调整与电话之间的间距
     ctx.fillText(emailIcon + " " + (email || "电子邮箱"), 130, 165);
   }
 }
