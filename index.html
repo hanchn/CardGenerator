@@ -218,8 +218,9 @@
       width: 40px;
       height: 40px;
       font-size: 20px;
-      line-height: 40px;
-      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
       box-shadow: var(--shadow);
       opacity: 0;
@@ -245,7 +246,7 @@
     <div class="form-container">
       <div class="form-group"><label for="name">姓名</label><input type="text" id="name" value="张三"></div>
       <div class="form-group"><label for="title">职位</label><input type="text" id="title" value="产品经理"></div>
-      <div class="form-group"><label for="company">公司</label><input type="text" id="company" value="科技有限公司"></div>
+      <div class="form-group"><label for="company">公司</label><input type="text" id="company" value="xx网络科技有限公司"></div>
       <div class="form-group"><label for="phone">电话</label><input type="text" id="phone" value="138-0000-0000"></div>
       <div class="form-group"><label for="phoneIcon">电话图标</label><input type="text" id="phoneIcon" value="📞"></div>
       <div class="form-group"><label for="email">邮箱</label><input type="email" id="email" value="example@company.com"></div>
@@ -412,13 +413,27 @@ function generateCard() {
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // 添加装饰元素
+  // 添加左侧装饰元素
   ctx.fillStyle = colors.primary;
-  ctx.fillRect(0, 0, 10, canvas.height);
+  ctx.fillRect(0, 0, 15, canvas.height);
+  
+  // 添加顶部装饰
+  ctx.fillStyle = colors.primary;
+  ctx.globalAlpha = 0.1;
+  ctx.fillRect(15, 0, canvas.width - 15, 40);
+  ctx.globalAlpha = 1.0;
 
   // 添加底部装饰
   ctx.fillStyle = colors.secondary;
-  ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+  ctx.fillRect(0, canvas.height - 25, canvas.width, 25);
+  
+  // 添加装饰图形
+  ctx.fillStyle = colors.primary;
+  ctx.globalAlpha = 0.05;
+  ctx.beginPath();
+  ctx.arc(350, 40, 80, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1.0;
 
   // 头像逻辑
   if (avatarInput.files.length > 0) {
@@ -440,40 +455,71 @@ function generateCard() {
   function drawText() {
     // 姓名
     ctx.fillStyle = colors.secondary;
-    ctx.font = "bold 22px 'Helvetica Neue', Arial";
-    ctx.fillText(name || "姓名", 120, 50);
+    ctx.font = "bold 24px 'Helvetica Neue', Arial";
+    ctx.fillText(name || "姓名", 130, 55);
 
     // 职位
     ctx.fillStyle = colors.primary;
     ctx.font = "16px 'Helvetica Neue', Arial";
-    ctx.fillText(title || "职位", 120, 75);
+    ctx.fillText(title || "职位", 130, 80);
 
     // 公司
     ctx.fillStyle = colors.secondary;
     ctx.font = "bold 14px 'Helvetica Neue', Arial";
-    ctx.fillText(company || "公司名称", 120, 105);
+    ctx.fillText(company || "公司名称", 130, 110);
+
+    // 添加分隔线
+    ctx.strokeStyle = colors.primary;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(130, 120);
+    ctx.lineTo(350, 120);
+    ctx.stroke();
 
     // 联系信息
     ctx.fillStyle = "#555";
     ctx.font = "14px 'Helvetica Neue', Arial";
 
     // 电话图标和电话
-    ctx.fillText(phoneIcon + " " + (phone || "电话号码"), 120, 135);
+    ctx.fillText(phoneIcon + " " + (phone || "电话号码"), 130, 145);
 
-    // 邮箱图标和邮箱
-    ctx.fillText(emailIcon + " " + (email || "电子邮箱"), 120, 160);
+    // 邮箱图标和邮箱 - 上移一些，预留底部间隙
+    ctx.fillText(emailIcon + " " + (email || "电子邮箱"), 130, 165);
   }
 }
 
-// 绘制头像
+// 绘制头像 - 添加边框效果并向右移动
 function drawAvatar(img) {
+  // 头像中心点向右移动10px
+  const centerX = 70;
+  const centerY = 60;
+  
+  // 绘制头像底部阴影
   ctx.save();
   ctx.beginPath();
-  ctx.arc(60, 60, 40, 0, Math.PI * 2);
+  ctx.arc(centerX, centerY, 42, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(0,0,0,0.1)";
+  ctx.fill();
+  ctx.restore();
+  
+  // 绘制头像边框
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, 40, 0, Math.PI * 2);
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 4;
+  ctx.stroke();
   ctx.closePath();
   ctx.clip();
-  ctx.drawImage(img, 20, 20, 80, 80);
+  ctx.drawImage(img, centerX - 40, centerY - 40, 80, 80);
   ctx.restore();
+  
+  // 绘制头像外圈
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, 42, 0, Math.PI * 2);
+  ctx.strokeStyle = getThemeColors().primary;
+  ctx.lineWidth = 2;
+  ctx.stroke();
 }
 
 // 下载名片
